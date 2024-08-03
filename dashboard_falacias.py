@@ -12,29 +12,12 @@ año_actual = datetime.datetime.now().year
 ruta_logo = "logo3_uta.png"
 logo = Image.open(ruta_logo)
 tamaño_logo = (290,290)
-
-usuarios_permitidos = {
-    "usuario": "1234"
-}
 st.set_page_config(layout="wide", page_title="Dashboard", page_icon=":chart_with_upwards_trend:", initial_sidebar_state="collapsed")
 st.sidebar.image(logo,width=tamaño_logo[0])
 
 @st.cache_data(experimental_allow_widgets=True)
 
-def mostrar_login():
-    st.title("Login")
-    username = st.text_input("Nombre de usuario")
-    password = st.text_input("Contraseña", type="password")
-    if st.button("Iniciar sesión"):
-        if username in usuarios_permitidos and usuarios_permitidos[username] == password:
-            st.session_state['logged_in'] = True
-            st.session_state['username'] = username
-            st.experimental_rerun()
-        else:
-            st.error("Nombre de usuario o contraseña incorrectos")
-
 def cargar_datos(archivo_csv):
-
     return pd.read_csv(archivo_csv,sep=";")
 
 def mostrar_total_asistentes(df):
@@ -91,13 +74,6 @@ def principal():
     if opciones == "filtrar":
         filtrar()
 
-
-
-
 if __name__ == "__main__":
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if st.session_state['logged_in']:
-        principal()
-    else:
-        mostrar_login()
+    principal()
+    
