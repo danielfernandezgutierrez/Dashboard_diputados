@@ -38,31 +38,38 @@ def filtrar():
             partidos = df_cargados['Partido'].unique()
             #legislaturas= df_cargados['ID_Legislatura'].unique()
             # Selector de partido y legislatura
-            partido_seleccionado = st.selectbox("Selecciona un partido", partidos)
-            # Filtrar el DataFrame por el partido y legislatura seleccionados
-            df_cargados = df_cargados[(df_cargados['Partido'] == partido_seleccionado)]
-            # Mostrar el DataFrame filtrado
-            st.dataframe(df_cargados)
-            return df_cargados
+            partido_seleccionado = st.multiselect("Selecciona un partido", partidos)
+            if partido_seleccionado:
+                # Filtrar el DataFrame por los partidos seleccionados
+                df_filtrado = df_cargados[df_cargados['Partido'].isin(partido_seleccionado)]
+                # Mostrar el DataFrame filtrado
+                st.dataframe(df_filtrado)
+                return df_filtrado
     else:
         st.write("Por favor, carga uno o más archivos CSV.")       
-    
+    return pd.DataFrame()
 
 
 def mostrar_total_asistentes(df):
     """Mostrar número total de asistentes y ausentes."""
     st.header("Número total de asistentes y ausentes")
-    total_asistentes = df['Asistencia'].value_counts()
-    fig = px.bar(total_asistentes, title="Número total de asistentes y ausentes")
-    st.plotly_chart(fig)
-
-
+    partidos = df['Partido'].unique()
+    for partido in partidos:
+        st.subheader(f"Partido: {partido}")
+        df_partido = df[df['Partido'] == partido]
+        total_asistentes = df_partido['Asistencia'].value_counts()
+        fig = px.bar(total_asistentes, title="Número total de asistentes y ausentes")
+        st.plotly_chart(fig)
 
 def mostrar_frecuencia_asistencia_persona(df):
     """Mostrar frecuencia de asistencia por persona."""
     st.header("Frecuencia de asistencia por persona")
-    frecuencia_asistencia_persona = df.groupby('Nombre')['Asistencia'].value_counts().unstack().fillna(0)
-    st.write(frecuencia_asistencia_persona)
+    partidos = df['Partido'].unique()
+    for partido in partidos:
+        st.subheader(f"Partido: {partido}")
+        df_partido = df[df['Partido'] == partido]
+        frecuencia_asistencia_persona = df_partido.groupby('Nombre')['Asistencia'].value_counts().unstack().fillna(0)
+        st.write(frecuencia_asistencia_persona)
 
 def mostrar_tipos_observaciones(df):
     """Mostrar tipos de observaciones."""
@@ -71,36 +78,32 @@ def mostrar_tipos_observaciones(df):
     fig = px.bar(tipos_observaciones, title="Tipos de observaciones")
     st.plotly_chart(fig)
 
-def mostrar_observaciones_por_partido(df):
-    """Mostrar frecuencia de observaciones por partido."""
-    st.header("Frecuencia de observaciones por partido")
-    observaciones_por_partido = df.groupby('Partido')['Observacion'].value_counts().unstack().fillna(0)
-    st.write(observaciones_por_partido)
-
 def mostrar_asistencia_tiempo(df):
     """Mostrar asistencia a lo largo del tiempo."""
     st.header("Asistencia a lo largo del tiempo")
-    asistencia_tiempo = df.groupby(['ID_Legislatura', 'ID_Sesion'])['Asistencia'].apply(lambda x: (x == 'A').mean() * 100).reset_index()
-    fig = px.line(asistencia_tiempo, x='ID_Sesion', y='Asistencia', color='ID_Legislatura', title="Asistencia a lo largo del tiempo")
-    st.plotly_chart(fig)
-
-
+    partidos = df['Partido'].unique()
+    for partido in partidos:
+        st.subheader(f"Partido: {partido}")
+        df_partido = df[df['Partido'] == partido]
+        asistencia_tiempo = df_partido.groupby(['ID_Legislatura', 'ID_Sesion'])['Asistencia'].apply(lambda x: (x == 'A').mean() * 100).reset_index()
+        fig = px.line(asistencia_tiempo, x='ID_Sesion', y='Asistencia', color='ID_Legislatura', title="Asistencia a lo largo del tiempo")
+        st.plotly_chart(fig)
 
 def mostrar_ranking_asistencia(df):
     """Mostrar ranking de asistencia por persona."""
     st.header("Ranking de asistencia por persona")
-    ranking_asistencia = df.groupby('Nombre')['Asistencia'].apply(lambda x: (x == 'A').mean() * 100).sort_values(ascending=False).reset_index()
-    fig = px.bar(ranking_asistencia, x='Nombre', y='Asistencia', title="Ranking de asistencia por persona")
-    st.plotly_chart(fig)
-
-
-
+    partidos = df['Partido'].unique()
+    for partido in partidos:
+        st.subheader(f"Partido: {partido}")
+        df_partido = df[df['Partido'] == partido]
+        ranking_asistencia = df_partido.groupby('Nombre')['Asistencia'].apply(lambda x: (x == 'A').mean() * 100).sort_values(ascending=False).reset_index()
+        fig = px.bar(ranking_asistencia, x='Nombre', y='Asistencia', title="Ranking de asistencia por persona")
+        st.plotly_chart(fig)
 
 def graficas(df):
     mostrar_total_asistentes(df)
     mostrar_frecuencia_asistencia_persona(df)
     mostrar_tipos_observaciones(df)
-    mostrar_observaciones_por_partido(df)
     mostrar_asistencia_tiempo(df)
     mostrar_ranking_asistencia(df)
     
