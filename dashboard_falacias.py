@@ -43,21 +43,76 @@ def filtrar():
             df_cargados = df_cargados[(df_cargados['Partido'] == partido_seleccionado)]
             # Mostrar el DataFrame filtrado
             st.dataframe(df_cargados)
+            return df_cargados
     else:
         st.write("Por favor, carga uno o más archivos CSV.")       
+    
 
+
+def mostrar_total_asistentes(df):
+    """Mostrar número total de asistentes y ausentes."""
+    st.header("Número total de asistentes y ausentes")
+    total_asistentes = df['Asistencia'].value_counts()
+    fig = px.bar(total_asistentes, title="Número total de asistentes y ausentes")
+    st.plotly_chart(fig)
+
+
+
+def mostrar_frecuencia_asistencia_persona(df):
+    """Mostrar frecuencia de asistencia por persona."""
+    st.header("Frecuencia de asistencia por persona")
+    frecuencia_asistencia_persona = df.groupby('Nombre')['Asistencia'].value_counts().unstack().fillna(0)
+    st.write(frecuencia_asistencia_persona)
+
+def mostrar_tipos_observaciones(df):
+    """Mostrar tipos de observaciones."""
+    st.header("Tipos de observaciones")
+    tipos_observaciones = df['Observacion'].value_counts()
+    fig = px.bar(tipos_observaciones, title="Tipos de observaciones")
+    st.plotly_chart(fig)
+
+def mostrar_observaciones_por_partido(df):
+    """Mostrar frecuencia de observaciones por partido."""
+    st.header("Frecuencia de observaciones por partido")
+    observaciones_por_partido = df.groupby('Partido')['Observacion'].value_counts().unstack().fillna(0)
+    st.write(observaciones_por_partido)
+
+def mostrar_asistencia_tiempo(df):
+    """Mostrar asistencia a lo largo del tiempo."""
+    st.header("Asistencia a lo largo del tiempo")
+    asistencia_tiempo = df.groupby(['ID_Legislatura', 'ID_Sesion'])['Asistencia'].apply(lambda x: (x == 'A').mean() * 100).reset_index()
+    fig = px.line(asistencia_tiempo, x='ID_Sesion', y='Asistencia', color='ID_Legislatura', title="Asistencia a lo largo del tiempo")
+    st.plotly_chart(fig)
+
+
+
+def mostrar_ranking_asistencia(df):
+    """Mostrar ranking de asistencia por persona."""
+    st.header("Ranking de asistencia por persona")
+    ranking_asistencia = df.groupby('Nombre')['Asistencia'].apply(lambda x: (x == 'A').mean() * 100).sort_values(ascending=False).reset_index()
+    fig = px.bar(ranking_asistencia, x='Nombre', y='Asistencia', title="Ranking de asistencia por persona")
+    st.plotly_chart(fig)
+
+
+
+
+def graficas(df):
+    mostrar_total_asistentes(df)
+    mostrar_frecuencia_asistencia_persona(df)
+    mostrar_tipos_observaciones(df)
+    mostrar_observaciones_por_partido(df)
+    mostrar_asistencia_tiempo(df)
+    mostrar_ranking_asistencia(df)
+    
 def principal():
     size_title = 'font-size: 24px; text-align: center; color: #000000; font-weight: lighter'
     title = "Dashboard Legislaturas"
     st.sidebar.write(f'<p style="{size_title}">{title}</p>',unsafe_allow_html=True)
-   
-    bd_default = "372.csv"
-    df_test = cargar_datos(bd_default)
-
+    #Seleccionar disntitas opciones barra lateral izquierda
     opciones = st.sidebar.radio(" ", options=[ "filtrar"])
     if opciones == "filtrar":
-        filtrar()
-
+        df=filtrar()
+        graficas(df)
 if __name__ == "__main__":
     principal()
     
