@@ -16,19 +16,11 @@ st.set_page_config(layout="wide", page_title="Dashboard", page_icon=":chart_with
 st.sidebar.image(logo,width=tamaño_logo[0])
 
 @st.cache_data(experimental_allow_widgets=True)
-
+ 
 def cargar_datos(archivo_csv):
     return pd.read_csv(archivo_csv,sep=";")
 
-def mostrar_total_asistentes(df):
-    st.header("Número total de asistentes y ausentes")
-    total_asistentes = df['Asistencia'].value_counts()
-    fig = px.bar(total_asistentes, title="Número total de asistentes y ausentes")
-def filtrar_seleccionado(df, partido, legislatura):
-    # Filtrar el DataFrame por el partido y legislatura seleccionados
-    df_filtrado = df[(df['Partido'] == partido) & (df['ID_Legislatura'] == legislatura)]
-    return df_filtrado
-
+df_seleccionados = pd.DataFrame()
 def filtrar():
     st.header("Filtrar por fechas")
     archivos_csv = st.file_uploader("Cargar archivos CSV", type=["csv"], accept_multiple_files=True)
@@ -42,20 +34,15 @@ def filtrar():
         # Combinar todos los DataFrames en uno solo
         if dataframes:
             df_cargados = pd.concat(dataframes, ignore_index=True)
-           
             # Obtener los partidos y legislaturas únicos
             partidos = df_cargados['Partido'].unique()
-            legislaturas = df_cargados['ID_Legislatura'].unique()
-            
+            #legislaturas= df_cargados['ID_Legislatura'].unique()
             # Selector de partido y legislatura
             partido_seleccionado = st.selectbox("Selecciona un partido", partidos)
-            legislatura_seleccionada = st.selectbox("Selecciona una Legislatura", legislaturas)
-            
             # Filtrar el DataFrame por el partido y legislatura seleccionados
-            df_filtrado = filtrar_seleccionado(df_cargados, partido_seleccionado, legislatura_seleccionada)
-            
+            df_cargados = df_cargados[(df_cargados['Partido'] == partido_seleccionado)]
             # Mostrar el DataFrame filtrado
-            st.dataframe(df_filtrado)
+            st.dataframe(df_cargados)
     else:
         st.write("Por favor, carga uno o más archivos CSV.")       
 
@@ -67,10 +54,7 @@ def principal():
     bd_default = "372.csv"
     df_test = cargar_datos(bd_default)
 
-    opciones = st.sidebar.radio(" ", options=["test", "filtrar"])
-    if opciones == "test":
-        # Mostrar las diferentes visualizaciones
-        mostrar_total_asistentes(df_test)
+    opciones = st.sidebar.radio(" ", options=[ "filtrar"])
     if opciones == "filtrar":
         filtrar()
 
