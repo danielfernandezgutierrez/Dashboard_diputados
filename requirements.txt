@@ -1,0 +1,11 @@
+matplotlib
+missingno
+numpy
+pandas
+Pillow
+Plost
+plotly
+seaborn
+streamlit
+openpyxl
+datetime
